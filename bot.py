@@ -15,8 +15,8 @@ else:
     device = torch.device("cpu")
 
 # Set up the T5 model and tokenizer
-tokenizer = T5Tokenizer.from_pretrained('google/flan-t5-xxl')
-model = T5ForConditionalGeneration.from_pretrained('google/flan-t5-xxl').to(device)
+tokenizer = T5Tokenizer.from_pretrained('google/flan-t5-base')
+model = T5ForConditionalGeneration.from_pretrained('google/flan-t5-base').to(device)
 
 # Set up the Roberta model and tokenizer for Swear And Hate Speech Detection
 hate_speech_model = RobertaForSequenceClassification.from_pretrained('facebook/roberta-hate-speech-dynabench-r4-target')
@@ -71,7 +71,7 @@ async def generate_response(user, input_text):
         response = "I'm sorry, I cannot respond to this message as it contains hate speech or swear words."
         return f"{user.mention}: {response}"
 
-        # Prepend the translation phrase to the input text
+    # Prepend the translation phrase to the input text
     input_text = "Translate this sentence to " + input_text
 
     # Add the user's mention to the context
@@ -99,9 +99,16 @@ async def generate_response(user, input_text):
     # Decode the response and remove the bot mention
     response = tokenizer.decode(output[0], skip_special_tokens=True).replace(client.user.mention, '').split('\n')[0]
 
-    # If the response is empty, return a default message
-    if not response:
-        response = "I'm sorry, I didn't understand that."
+    # Remove the user's name from the response
+    response = response.replace(user.name, '')
+
+    # Check if the response contains only colons or whitespace
+    if all(c in (':', ' ') for c in response):
+        response = "I'm sorry, I don't understand that."
+
+    # If the response is empty or contains only whitespace, return a generic error message
+    if not response or response.strip() == '':
+        response = "I'm sorry, I don't have a response for that."
 
     # Save the conversation history to the chat log file and add it to the conversation history list
     now = datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")

@@ -149,4 +149,4 @@ async def on_message(message):
     await handle_message(message)
 
 # Run the bot with your Discord bot token
-client.run("MTA2NzYyNTc1ODUwNTMxMjMyNg.GiJ6iv.sxBdj4lF_SJIlQ_8cTDGMIgWhQXMIWPnGyvtFM")
+client.run("your-bot-token-here")
